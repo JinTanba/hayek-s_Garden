@@ -8,6 +8,14 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 contract Hayek is EIP712 {
     using ECDSA for bytes32;
 
+    event ProtocolRegistered(uint256 indexed protocolId, address indexed protocol, address owner, address rewardToken, uint256 rewardPool, bool isPermitedBase);
+    event TxHashSubmitted(uint256 indexed protocolId, bytes32 indexed txHash, address indexed uiOwner);
+    event PermitedAddressesAdded(uint256 indexed protocolId, address[] addresses);
+    event PermitedAddressesRemoved(uint256 indexed protocolId, address[] addresses);
+    event PoolFunded(uint256 indexed protocolId, uint256 amount);
+    event PoolWithdrawn(uint256 indexed protocolId, uint256 amount);
+    event RewardsDistributed(uint256 indexed protocolId, uint256 totalDistributed, uint256 remainingReward);
+
     struct Protocol {
         address protocol;
         address owner;
@@ -25,7 +33,7 @@ contract Hayek is EIP712 {
         keccak256("SubmitTxhash(uint256 protocolId,bytes32 txHash,address txSender,address uiOwner)");
 
     constructor() EIP712("Hayek", "1") {}
-    
+
     function submitTxhash(
         uint256 _protocolId, 
         bytes32 _txHash,
@@ -47,6 +55,7 @@ contract Hayek is EIP712 {
         require(signer == txSender, "UIS: Invalid signature");
 
         txHashToOwner[_protocolId][_txHash] = msg.sender;
+        emit TxHashSubmitted(_protocolId, _txHash, msg.sender);
     }
 
     function getTxhashOwner(uint256 _protocolId, bytes32 _txHash) external view returns(address) {
@@ -72,6 +81,8 @@ contract Hayek is EIP712 {
             protocols[protocolId].rewardPool = _rewardPool;
             require(IERC20(_rewardToken).transferFrom(msg.sender, address(this), _rewardPool), "USI: Fail to transfer");
         }
+
+        emit ProtocolRegistered(protocolId, _protocol, msg.sender, _rewardToken, _rewardPool, _isPermitedBase);
     }
 
     function addPermited(uint256 _protocolId, address[] calldata _addressList) public {
@@ -84,6 +95,8 @@ contract Hayek is EIP712 {
         for(uint256 i = 0; i < _addressList.length; i++) {
             protocols[_protocolId].isPermited[_addressList[i]] = true;
         }
+
+        emit PermitedAddressesAdded(_protocolId, _addressList);
     }
 
     function removePermited(uint256 _protocolId, address[] calldata _addressList) public {
@@ -91,6 +104,8 @@ contract Hayek is EIP712 {
         for(uint256 i = 0; i < _addressList.length; i++) {
             protocols[_protocolId].isPermited[_addressList[i]] = false;
         }
+
+        emit PermitedAddressesRemoved(_protocolId, _addressList);
     }
 
     function fundPool(uint256 _protocolId, uint256 _amount) public payable {
@@ -102,6 +117,8 @@ contract Hayek is EIP712 {
             IERC20(protocols[_protocolId].rewardToken).transferFrom(msg.sender, address(this), _amount);
             protocols[_protocolId].rewardPool += _amount;
         }
+
+        emit PoolFunded(_protocolId, _amount);
     }
 
     function withdrawPool(uint256 _protocolId, uint256 _amount) public {
@@ -114,6 +131,8 @@ contract Hayek is EIP712 {
             IERC20(protocols[_protocolId].rewardToken).transfer(msg.sender, _amount);
         }
         protocols[_protocolId].rewardPool -= _amount;
+
+        emit PoolWithdrawn(_protocolId, _amount);
     }
  
     function distribute(uint256 _protocolId, bytes32[] memory txHashList) public {
@@ -167,6 +186,8 @@ contract Hayek is EIP712 {
         }
         
         protocols[_protocolId].rewardPool = 0;
+
+        emit RewardsDistributed(_protocolId, rewardPoolAmount, remainingReward);
     }
 
 }
