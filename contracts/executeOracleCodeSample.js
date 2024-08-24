@@ -8,10 +8,10 @@ const API_KEYS = {
 };
 
 const API_URLS = {
-    1: 'https://api.etherscan.io',
-    8453: 'https://api.basescan.io',
-    10: 'https://api.optimism.io',
-    42161: 'https://api.arbitrum.io'
+    1: 'https://api.etherscan.org/api',
+    8453: 'https://api.basescan.org/api',
+    10: 'https://api-optimistic.etherscan.io/api',
+    42161: 'https://api.arbitrum.io/api'
 };
 
 const NETWORK_NAMES = {
