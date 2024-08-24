@@ -8,33 +8,33 @@ const API_KEYS = {
 };
 
 const API_URLS = {
-  1: `https://gateway-api.cabinet-node.com/${args[0]}`, //cabinet-node
-  8453: `https://gateway-api.cabinet-node.com/${args[1]}`, //cabinet-node
-  10: 'https://api-optimistic.etherscan.io/api'
+  1: `${secrets.cabinet[0]}`, //cabinet-node
+  8453: `${secrets.cabinet[1]}`, //cabinet-node
+  42161:`${secrets.cabinet[2]}`// arbitrum
 };
 
 const NETWORK_NAMES = {
   1: 'Ethereum Mainnet',
   8453: 'Base',
-  10: 'Optimism'
+  10: 'Arbitrum'
 };
 
-const CONTRACT_ADDRESS = args[2];
-
+const CONTRACT_ADDRESS = args[3];
+const startBlock = args[4];
 const FUNCTIONS = [
-    ...args.slice(3, args.length)
+    ...args.slice(5, args.length)
 ];
 
 const FUNCTION_SIGNATURES = FUNCTIONS.map(func => ethers.id(func).slice(0, 10));
 console.log('Function Signatures:', FUNCTION_SIGNATURES);
 
-async function getContractTransactions(chainId, startBlock = 0, endBlock = 'latest') {
+async function getContractTransactions(chainId, endBlock = 'latest') {
   if (![1, 8453, 10].includes(chainId)) {
     throw new Error('Unsupported chainId. Use 1 for Ethereum Mainnet, 8453 for Base, or 10 for Optimism.');
   }
 
   const API_KEY = API_KEYS[chainId];
-  const API_URL = API_URLS[chainId];
+  const API_URL = `https://gateway-api.cabinet-node.com/s${API_URLS[chainId]}`;
 
   try {
     const response = await Functions.makeHttpRequest({

@@ -89,15 +89,16 @@ contract HayekCrossChainOracle is FunctionsClient, ConfirmedOwner {
 
     function sendRequest(
         uint256 protocolId,
-        string[] memory args, //[your mainnet cabinet`accsess token, your base cabinet`accsess token, target contract address, ...function signature]
+        bytes memory encryptedSecretsUrls, // -----> this should be made by gist API.
+        string[] memory args, //[your mainnet cabinet`accsess token, your base cabinet`accsess token, target contract address,lastProcessedBlocknumber, ...function signature]
         uint256 sendAmount
     ) external returns (bytes32 requestId) {
         IHayek.Protocol memory protocol = IHayek(hub).protocols(protocolId);
         require(protocol.owner == msg.sender, "HayekCrossChainOracle: not protocol owner");
         
         uint256 oldBalance = getSubscriptionBalance();
-        
         FunctionsRequest.Request memory req;
+        req.addSecretsReference(encryptedSecretsUrls);
         req.initializeRequestForInlineJavaScript(source);
         req.setArgs(args);
 

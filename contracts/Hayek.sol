@@ -34,7 +34,9 @@ contract Hayek is EIP712 {
     bytes32 private constant SUBMIT_TXHASH_TYPEHASH = 
         keccak256("SubmitTxhash(uint256 protocolId,bytes32 txHash,address txSender,address uiOwner)");
 
-    constructor() EIP712("Hayek", "1") {}
+    constructor(address _crossChainOracle) EIP712("Hayek", "1") {
+        crossChainOracle = _crossChainOracle;
+    }
 
     function submitTxhash(
         uint256 _protocolId,
@@ -138,7 +140,7 @@ contract Hayek is EIP712 {
         emit PoolWithdrawn(_protocolId, _amount);
     }
 
-    function commit(uint256 _protocolId, bytes32 rootHash) external {
+    function _commit(uint256 _protocolId, bytes32 rootHash) external { // this function is called by the crossChainOracle`s callback;
         require(msg.sender == crossChainOracle, "UIS: not owner");
         protocols[_protocolId].txHashListForDistribute = rootHash;
     }
