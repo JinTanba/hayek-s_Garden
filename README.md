@@ -1,3 +1,59 @@
+# ⚠️⚠️
+
+### I know this is unheard of, but txHash is as important as treasure here.
+
+In this protocol, txHash plays a crucial role. The contract, in an effort to avoid requiring additional descriptions from the client protocol, places a somewhat greater technical burden on UI developers. To ensure that UI developers receive rewards for their contributions, the following is recommended:
+
+By using rawTransaction, understand the txHash before sending it to the network, and then send it to the HeyakContract. This allows you to be the first in the world to know the txHash, which is the treasure here!
+
+```javascript
+async function getTransactionHash(fromAddress, toAddress, value, data = '') {
+  try {
+    // Get the current nonce
+    const nonce = await web3.eth.getTransactionCount(fromAddress);
+
+    // Get the current gas price
+    const gasPrice = await web3.eth.getGasPrice();
+
+    // Estimate gas limit
+    const gasLimit = await web3.eth.estimateGas({
+      from: fromAddress,
+      to: toAddress,
+      value: web3.utils.toWei(value, 'ether'),
+      data: data
+    });
+
+    // Create the transaction object
+    const txObject = {
+      nonce: web3.utils.toHex(nonce),
+      to: toAddress,
+      value: web3.utils.toHex(web3.utils.toWei(value, 'ether')),
+      gasLimit: web3.utils.toHex(gasLimit),
+      gasPrice: web3.utils.toHex(gasPrice),
+      data: data
+    };
+
+    // Sign the transaction (you would normally do this with the actual private key)
+    const signedTx = await web3.eth.accounts.signTransaction(txObject, 'YOUR_PRIVATE_KEY');
+
+    // Get the raw transaction
+    const rawTransaction = signedTx.rawTransaction;
+
+    // Calculate and return the transaction hash
+    const txHash = web3.utils.sha3(rawTransaction);
+    return txHash;
+  } catch (error) {
+    console.error('Error in getTransactionHash:', error);
+    throw error;
+  }
+}
+
+```
+
+
+
+
+
 # 🧐🎨Hayek protocol
 
 Smart contracts can operate regardless of the interface used to interact with them. They can be called from rich UIs or scripts, right? This characteristic suggests the following possibility: 
@@ -117,54 +173,3 @@ These functions allow protocol owners to flexibly adjust the reward pool.
 The technical implementation of HyekProtocol provides a mechanism to accurately track UI developers' contributions and fairly distribute rewards. Simultaneously, it offers flexible management tools to protocol owners, enabling the construction of a long-term, sustainable ecosystem. This design effectively promotes UIX improvement and mass adoption of Web3, potentially allowing more users to access and utilize Web3 technologies.
 
 By incentivizing continuous improvement and competition among UI developers, HyekProtocol aims to solve the "last mile" problem in Web3 adoption, making decentralized applications more accessible and user-friendly for a broader audience.
-
-
-# ⚠️⚠️
-
-In this protocol, txHash plays a crucial role. The contract, in an effort to avoid requiring additional descriptions from the client protocol, places a somewhat greater technical burden on UI developers. To ensure that UI developers receive rewards for their contributions, the following is recommended:
-
-By using rawTransaction, understand the txHash before sending it to the network, and then send it to the HeyakContract. This allows you to be the first in the world to know the txHash, which is the treasure here!
-
-```javascript
-async function getTransactionHash(fromAddress, toAddress, value, data = '') {
-  try {
-    // Get the current nonce
-    const nonce = await web3.eth.getTransactionCount(fromAddress);
-
-    // Get the current gas price
-    const gasPrice = await web3.eth.getGasPrice();
-
-    // Estimate gas limit
-    const gasLimit = await web3.eth.estimateGas({
-      from: fromAddress,
-      to: toAddress,
-      value: web3.utils.toWei(value, 'ether'),
-      data: data
-    });
-
-    // Create the transaction object
-    const txObject = {
-      nonce: web3.utils.toHex(nonce),
-      to: toAddress,
-      value: web3.utils.toHex(web3.utils.toWei(value, 'ether')),
-      gasLimit: web3.utils.toHex(gasLimit),
-      gasPrice: web3.utils.toHex(gasPrice),
-      data: data
-    };
-
-    // Sign the transaction (you would normally do this with the actual private key)
-    const signedTx = await web3.eth.accounts.signTransaction(txObject, 'YOUR_PRIVATE_KEY');
-
-    // Get the raw transaction
-    const rawTransaction = signedTx.rawTransaction;
-
-    // Calculate and return the transaction hash
-    const txHash = web3.utils.sha3(rawTransaction);
-    return txHash;
-  } catch (error) {
-    console.error('Error in getTransactionHash:', error);
-    throw error;
-  }
-}
-
-```
