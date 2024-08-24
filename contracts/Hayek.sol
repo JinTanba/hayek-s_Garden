@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
+import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
+import {EIP712} from "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 contract Hayek is EIP712 {
@@ -35,7 +35,7 @@ contract Hayek is EIP712 {
     constructor() EIP712("Hayek", "1") {}
 
     function submitTxhash(
-        uint256 _protocolId, 
+        uint256 _protocolId,
         bytes32 _txHash,
         address txSender,
         bytes memory txSenderSig
@@ -61,6 +61,7 @@ contract Hayek is EIP712 {
     function getTxhashOwner(uint256 _protocolId, bytes32 _txHash) external view returns(address) {
         return txHashToOwner[_protocolId][_txHash];
     }
+
     // Protocol deployer
     function regist(
         address _protocol,
