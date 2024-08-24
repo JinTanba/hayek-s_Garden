@@ -147,6 +147,8 @@ contract Hayek is EIP712 {
         require(protocols[_protocolId].txHashListForDistribute == keccak256(abi.encodePacked(txHashList)), "UIS: txHashListForDistribute is empty");
         require(protocols[_protocolId].owner == msg.sender, "UIS: not owner");
         
+        protocols[_protocolId].txHashListForDistribute = 0;
+        
         uint256 rewardPoolAmount = protocols[_protocolId].rewardPool;
         uint256 remainingReward = rewardPoolAmount;
         uint256 totalTx = txHashList.length;
