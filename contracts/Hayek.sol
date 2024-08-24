@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 contract Hayek is EIP712 {
     using ECDSA for bytes32;
 
+    address public crossChainOracle;
     event ProtocolRegistered(uint256 indexed protocolId, address indexed protocol, address owner, address rewardToken, uint256 rewardPool, bool isPermitedBase);
     event TxHashSubmitted(uint256 indexed protocolId, bytes32 indexed txHash, address indexed uiOwner);
     event PermitedAddressesAdded(uint256 indexed protocolId, address[] addresses);
@@ -22,12 +23,13 @@ contract Hayek is EIP712 {
         address rewardToken; // address(0) for ETH
         uint256 rewardPool;
         bool isPermitedBase;
-        mapping(address => bool) isPermited;
+        bytes32 txHashListForDistribute;
     }
 
     uint256 public protocolId;
     mapping(uint256 protocolId => mapping(bytes32 txHash => address uiOwnerAddress)) public txHashToOwner;
     mapping(uint256 protocolId => Protocol) public protocols;
+    mapping(uint256 protocolId => mapping(address => bool)) public isPermited;
 
     bytes32 private constant SUBMIT_TXHASH_TYPEHASH = 
         keccak256("SubmitTxhash(uint256 protocolId,bytes32 txHash,address txSender,address uiOwner)");
@@ -40,7 +42,7 @@ contract Hayek is EIP712 {
         address txSender,
         bytes memory txSenderSig
     ) external {
-        require(protocols[_protocolId].isPermitedBase == false || protocols[_protocolId].isPermited[msg.sender] == true, "UIS: not permited");
+        require(protocols[_protocolId].isPermitedBase == false || isPermited[_protocolId][msg.sender] == true, "UIS: not permited");
         
         bytes32 structHash = keccak256(abi.encode(
             SUBMIT_TXHASH_TYPEHASH,
@@ -94,7 +96,7 @@ contract Hayek is EIP712 {
         }
 
         for(uint256 i = 0; i < _addressList.length; i++) {
-            protocols[_protocolId].isPermited[_addressList[i]] = true;
+            isPermited[_protocolId][_addressList[i]] = true;
         }
 
         emit PermitedAddressesAdded(_protocolId, _addressList);
@@ -103,7 +105,7 @@ contract Hayek is EIP712 {
     function removePermited(uint256 _protocolId, address[] calldata _addressList) public {
         require(protocols[_protocolId].owner == msg.sender, "UIS: not owner");
         for(uint256 i = 0; i < _addressList.length; i++) {
-            protocols[_protocolId].isPermited[_addressList[i]] = false;
+            isPermited[_protocolId][_addressList[i]] = false;
         }
 
         emit PermitedAddressesRemoved(_protocolId, _addressList);
@@ -135,8 +137,14 @@ contract Hayek is EIP712 {
 
         emit PoolWithdrawn(_protocolId, _amount);
     }
+
+    function commitTxHashListRootHash(uint256 _protocolId, bytes32 rootHash) public {
+        require(msg.sender == crossChainOracle, "UIS: not owner");
+        protocols[_protocolId].txHashListForDistribute = rootHash;
+    }
  
     function distribute(uint256 _protocolId, bytes32[] memory txHashList) public {
+        require(protocols[_protocolId].txHashListForDistribute == keccak256(abi.encodePacked(txHashList)), "UIS: txHashListForDistribute is empty");
         require(protocols[_protocolId].owner == msg.sender, "UIS: not owner");
         
         uint256 rewardPoolAmount = protocols[_protocolId].rewardPool;
