@@ -121,10 +121,34 @@ This function assigns a unique ID to each protocol and allows the use of either 
 UI developers submit transaction hashes executed through their UI using the `submitTxhash` function:
 
 ```solidity
-function submitTxhash(uint256 _protocolId, bytes32 _txHash) external {
-require(protocols[_protocolId].isPermitedBase == false || protocols[_protocolId].isPermited[msg.sender] == true, "UIS: not permited");
-txHashToOwner[_protocolId][_txHash] = msg.sender;
-}
+function submitTxhash(
+        uint256 _protocolId,
+        bytes32 _txHash,
+        address txSender,
+        bytes memory txSenderSig
+    ) external {
+        require(protocols[_protocolId].isPermitedBase == false || isPermited[_protocolId][msg.sender] == true, "UIS: not permited");
+        
+        bytes32 structHash = keccak256(abi.encode(
+            SUBMIT_TXHASH_TYPEHASH,
+            _protocolId,
+            _txHash,
+            txSender,
+            msg.sender
+        ));
+
+        bytes32 _hash = _hashTypedDataV4(structHash);
+        address signer = _hash.recover(txSenderSig);
+
+        require(signer == txSender, "UIS: Invalid signature");
+
+        txHashToOwner[_protocolId][_txHash] = OwnedTransaction({
+            from: txSender,
+            owner: msg.sender
+        });
+        emit TxHashSubmitted(_protocolId, _txHash, msg.sender);
+    }
+
 ```
 
 This function checks the protocol's access control and associates the transaction hash with the UI developer's address.
