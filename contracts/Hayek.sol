@@ -138,7 +138,7 @@ contract Hayek is EIP712 {
         emit PoolWithdrawn(_protocolId, _amount);
     }
 
-    function commitTxHashListRootHash(uint256 _protocolId, bytes32 rootHash) public {
+    function commit(uint256 _protocolId, bytes32 rootHash) external {
         require(msg.sender == crossChainOracle, "UIS: not owner");
         protocols[_protocolId].txHashListForDistribute = rootHash;
     }
