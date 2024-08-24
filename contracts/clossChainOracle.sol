@@ -77,7 +77,11 @@ contract HayekCrossChainOracle is FunctionsClient, ConfirmedOwner {
     event Response(bytes32 indexed requestId, bytes response, bytes err);
     event LinkReport(uint256 oldBalance, uint256 newBalance);
 
-    constructor(address _hub) FunctionsClient(router) ConfirmedOwner(msg.sender) {
+    constructor() FunctionsClient(router) ConfirmedOwner(msg.sender) {
+    }
+
+    function init(address _hub) external {
+        require(hub == address(0), "HayekCrossChainOracle: already initialized");
         hub = _hub;
     }
 

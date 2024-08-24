@@ -53,6 +53,7 @@ contract Hayek is EIP712 {
             txSender,
             msg.sender
         ));
+
         bytes32 hash = _hashTypedDataV4(structHash);
         address signer = hash.recover(txSenderSig);
 
