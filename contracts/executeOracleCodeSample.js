@@ -8,8 +8,8 @@ const API_KEYS = {
 };
 
 const API_URLS = {
-  1: 'https://gateway-api.cabinet-node.com/83423dae8f1c63366481c8de2f68b097', //cabinet-node
-  8453: 'https://gateway-api.cabinet-node.com/d4946f6bfedf7388234c2430d633d43e', //cabinet-node
+  1: `https://gateway-api.cabinet-node.com/${args[0]}`, //cabinet-node
+  8453: `https://gateway-api.cabinet-node.com/${args[1]}`, //cabinet-node
   10: 'https://api-optimistic.etherscan.io/api'
 };
 
@@ -19,10 +19,10 @@ const NETWORK_NAMES = {
   10: 'Optimism'
 };
 
-const CONTRACT_ADDRESS = args[0];
+const CONTRACT_ADDRESS = args[2];
 
 const FUNCTIONS = [
-    ...args.slice(1, args.length)
+    ...args.slice(3, args.length)
 ];
 
 const FUNCTION_SIGNATURES = FUNCTIONS.map(func => ethers.id(func).slice(0, 10));
