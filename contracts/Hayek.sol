@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
-contract Hiek is EIP712 {
+contract Hayek is EIP712 {
     using ECDSA for bytes32;
 
     struct Protocol {
@@ -24,8 +24,8 @@ contract Hiek is EIP712 {
     bytes32 private constant SUBMIT_TXHASH_TYPEHASH = 
         keccak256("SubmitTxhash(uint256 protocolId,bytes32 txHash,address txSender,address uiOwner)");
 
-    constructor() EIP712("Hiek", "1") {}
-
+    constructor() EIP712("Hayek", "1") {}
+    
     function submitTxhash(
         uint256 _protocolId, 
         bytes32 _txHash,
