@@ -26,8 +26,18 @@ contract Hayek is EIP712 {
         bytes32 txHashListForDistribute;
     }
 
+    struct Transaction {
+        bytes32 txHash;
+        address from;
+    }
+
+    struct OwnedTransaction {
+        address from;// this sender of the tx
+        address owner; // this mean the owner of the UI
+    }
+
     uint256 public protocolId;
-    mapping(uint256 protocolId => mapping(bytes32 txHash => address uiOwnerAddress)) public txHashToOwner;
+    mapping(uint256 protocolId => mapping(bytes32 txHash => OwnedTransaction)) public txHashToOwner;
     mapping(uint256 protocolId => Protocol) public protocols;
     mapping(uint256 protocolId => mapping(address => bool)) public isPermited;
 
@@ -54,17 +64,20 @@ contract Hayek is EIP712 {
             msg.sender
         ));
 
-        bytes32 hash = _hashTypedDataV4(structHash);
-        address signer = hash.recover(txSenderSig);
+        bytes32 _hash = _hashTypedDataV4(structHash);
+        address signer = _hash.recover(txSenderSig);
 
         require(signer == txSender, "UIS: Invalid signature");
 
-        txHashToOwner[_protocolId][_txHash] = msg.sender;
+        txHashToOwner[_protocolId][_txHash] = OwnedTransaction({
+            from: txSender,
+            owner: msg.sender
+        });
         emit TxHashSubmitted(_protocolId, _txHash, msg.sender);
     }
 
     function getTxhashOwner(uint256 _protocolId, bytes32 _txHash) external view returns(address) {
-        return txHashToOwner[_protocolId][_txHash];
+        return txHashToOwner[_protocolId][_txHash].owner;
     }
 
     // Protocol deployer
@@ -145,9 +158,16 @@ contract Hayek is EIP712 {
         require(msg.sender == crossChainOracle, "UIS: not owner");
         protocols[_protocolId].txHashListForDistribute = rootHash;
     }
+
+    
  
-    function distribute(uint256 _protocolId, bytes32[] memory txHashList) public {
-        require(protocols[_protocolId].txHashListForDistribute == keccak256(abi.encodePacked(txHashList)), "UIS: txHashListForDistribute is empty");
+    function distribute(uint256 _protocolId, Transaction[] memory txHashList) public {
+        bytes memory encoded = new bytes(0);
+        for (uint i = 0; i < txHashList.length; i++) {
+            encoded = abi.encodePacked(encoded, txHashList[i].txHash, txHashList[i].from);
+        }
+        bytes32 stateHsh = keccak256(encoded);
+        require(protocols[_protocolId].txHashListForDistribute == stateHsh, "UIS: txHashListForDistribute is empty");
         require(protocols[_protocolId].owner == msg.sender, "UIS: not owner");
         
         protocols[_protocolId].txHashListForDistribute = 0;
@@ -161,7 +181,7 @@ contract Hayek is EIP712 {
         uint256 uniqueCount = 0;
 
         for (uint256 i = 0; i < totalTx; i++) {
-            address uiOwnerAddress = txHashToOwner[_protocolId][txHashList[i]];
+            address uiOwnerAddress = txHashToOwner[_protocolId][txHashList[i].txHash].owner;
             bool found = false;
             for (uint256 j = 0; j < uniqueCount; j++) {
                 if (uniqueAddresses[j] == uiOwnerAddress) {

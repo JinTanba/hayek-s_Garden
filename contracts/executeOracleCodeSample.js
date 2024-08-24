@@ -4,7 +4,8 @@ const ethers = await import("npm:ethers@6.10.0");
 const API_KEYS = {
   1: secrets.ETHERSCAN_API_KEY ? secrets.ETHERSCAN_API_KEY : "",   
   8453: secrets.BASESCAN_API_KEY ? secrets.BASESCAN_API_KEY : "", 
-  10: secrets.OPTIMISM_API_KEY ? secrets.OPTIMISM_API_KEY : ""     
+  10: secrets.OPTIMISM_API_KEY ? secrets.OPTIMISM_API_KEY : "" ,
+  42161: secrets.ARBITRUM_API_KEY ? secrets.ARBITRUM_API_KEY : ""   
 };
 
 const API_URLS = {
@@ -17,7 +18,8 @@ const API_URLS = {
 const NETWORK_NAMES = {
   1: 'Ethereum Mainnet',
   8453: 'Base',
-  10: 'Arbitrum'
+  42161: 'Arbitrum',
+  10: 'Optimism'
 };
 
 const CONTRACT_ADDRESS = args[0];
