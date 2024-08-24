@@ -8,9 +8,14 @@ const API_KEYS = {
 };
 
 const API_URLS = {
-  1: `${secrets.cabinet[0]}`, //cabinet-node
-  8453: `${secrets.cabinet[1]}`, //cabinet-node
-  42161:`${secrets.cabinet[2]}`// arbitrum
+    //Ethrcan API URL
+    1: 'https://api.etherscan.io',
+    //Base API URL
+    8453: 'https://api.basescan.io',
+    //Optimism API URL
+    10: 'https://api.optimism.io',
+    // arbitrum API URL
+    42161: 'https://api.arbitrum.io'
 };
 
 const NETWORK_NAMES = {
@@ -19,10 +24,10 @@ const NETWORK_NAMES = {
   10: 'Arbitrum'
 };
 
-const CONTRACT_ADDRESS = args[3];
-const startBlock = args[4];
+const CONTRACT_ADDRESS = args[0];
+const startBlock = args[1];
 const FUNCTIONS = [
-    ...args.slice(5, args.length)
+    ...args.slice(2, args.length)
 ];
 
 const FUNCTION_SIGNATURES = FUNCTIONS.map(func => ethers.id(func).slice(0, 10));
@@ -34,7 +39,7 @@ async function getContractTransactions(chainId, endBlock = 'latest') {
   }
 
   const API_KEY = API_KEYS[chainId];
-  const API_URL = `https://gateway-api.cabinet-node.com/s${API_URLS[chainId]}`;
+  const API_URL = API_URLS[chainId];
 
   try {
     const response = await Functions.makeHttpRequest({
@@ -56,7 +61,7 @@ async function getContractTransactions(chainId, endBlock = 'latest') {
       // 特定の関数シグネチャでフィルタリングしたトランザクションハッシュを返す
       return response.data.result
         .filter(tx => FUNCTION_SIGNATURES.some(sig => tx.input.startsWith(sig)))
-        .map(tx => tx.hash);
+        .map(tx => ({txHash: tx.hash, from: tx.from}));
     } else {
       throw new Error(`API Error: ${response.data.message}`);
     }

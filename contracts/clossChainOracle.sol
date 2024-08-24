@@ -9,7 +9,6 @@ pragma solidity 0.8.20;
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 // https://docs.chain.link/chainlink-functions <------ this is documentation for chainlinkFunctions;
-// https://cbnt.co.jp/post/service/rpc-node-provider/ <------ this is a link to a service that provides RPC nodes;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // On a lighter note, chainlinkFunction is a completely customizable off-chain implementation 
@@ -90,7 +89,7 @@ contract HayekCrossChainOracle is FunctionsClient, ConfirmedOwner {
     function sendRequest(
         uint256 protocolId,
         bytes memory encryptedSecretsUrls, // -----> this should be made by gist API.
-        string[] memory args, //[your mainnet cabinet`accsess token, your base cabinet`accsess token, target contract address,lastProcessedBlocknumber, ...function signature]
+        string[] memory args, // -----> look sources args[0] is CONTRACT_ADDRESS, args[1] is startBlock, args[2: args.length] is FUNCTION_SIGNATURES(you want to contain to interface);
         uint256 sendAmount
     ) external returns (bytes32 requestId) {
         IHayek.Protocol memory protocol = IHayek(hub).protocols(protocolId);
