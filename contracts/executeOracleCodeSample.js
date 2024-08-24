@@ -2,19 +2,15 @@ const ethers = await import("npm:ethers@6.10.0");
 
 
 const API_KEYS = {
-  1: secrets.ETHERSCAN_API_KEY ? secrets.ETHERSCAN_API_KEY : "",    // Ethereum Mainnet
-  8453: secrets.BASESCAN_API_KEY ? secrets.BASESCAN_API_KEY : "",   // Base
-  10: secrets.OPTIMISM_API_KEY ? secrets.OPTIMISM_API_KEY : ""      // Optimism
+  1: secrets.ETHERSCAN_API_KEY ? secrets.ETHERSCAN_API_KEY : "",   
+  8453: secrets.BASESCAN_API_KEY ? secrets.BASESCAN_API_KEY : "", 
+  10: secrets.OPTIMISM_API_KEY ? secrets.OPTIMISM_API_KEY : ""     
 };
 
 const API_URLS = {
-    //Ethrcan API URL
     1: 'https://api.etherscan.io',
-    //Base API URL
     8453: 'https://api.basescan.io',
-    //Optimism API URL
     10: 'https://api.optimism.io',
-    // arbitrum API URL
     42161: 'https://api.arbitrum.io'
 };
 
